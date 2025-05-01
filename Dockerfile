@@ -1,26 +1,27 @@
-# Usa imagem base com Python 3.11
+# Base Python image
 FROM python:3.11-slim
 
-# Instala Chrome e Chromedriver (essencial para Selenium)
+# Instalações básicas e Chrome
 RUN apt-get update && apt-get install -y \
-    wget unzip curl gnupg \
-    chromium-driver chromium
+    wget curl gnupg unzip \
+    chromium chromium-driver \
+    && apt-get clean
 
-# Define variáveis de ambiente para o Selenium
+# Variáveis para o Selenium
 ENV CHROME_BIN=/usr/bin/chromium
 ENV CHROMEDRIVER_PATH=/usr/bin/chromedriver
 
-# Define diretório de trabalho
+# Define o diretório de trabalho
 WORKDIR /app
 
-# Copia arquivos do projeto
+# Copia os arquivos para o container
 COPY . .
 
-# Instala as dependências Python
+# Instala dependências do Python
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Expõe a porta padrão do Streamlit
+# Expõe a porta do Streamlit
 EXPOSE 7860
 
-# Comando padrão ao iniciar o container
+# Comando para iniciar o app
 CMD ["streamlit", "run", "app.py", "--server.port=7860", "--server.address=0.0.0.0"]

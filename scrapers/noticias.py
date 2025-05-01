@@ -6,19 +6,22 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from bs4 import BeautifulSoup
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.chrome.options import Options
 
 def criar_driver():
-    service = Service('chromedriver-win64/chromedriver.exe')
-    options = webdriver.ChromeOptions()
-    options.add_argument('--headless=new')
+    options = Options()
+    options.add_argument('--headless')
     options.add_argument('--no-sandbox')
     options.add_argument('--disable-dev-shm-usage')
-    options.add_argument('--disable-blink-features=AutomationControlled')
-    options.add_argument('user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36')
-    options.binary_location = r"C:\Program Files\Google\Chrome\Application\chrome.exe"
+
+    options.binary_location = "/usr/bin/chromium"  # caminho do Chrome no container
+    service = Service("/usr/bin/chromedriver")     # caminho do chromedriver no container
 
     driver = webdriver.Chrome(service=service, options=options)
     return driver
+
 
 def buscar_noticias():
     driver = criar_driver()

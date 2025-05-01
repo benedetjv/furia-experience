@@ -1,6 +1,5 @@
 import os
 import json
-import faiss
 from sklearn.neighbors import NearestNeighbors
 index = faiss.read_index("index.faiss")
 import numpy as np

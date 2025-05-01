@@ -1,12 +1,11 @@
 import os
 import json
-from sklearn.neighbors import NearestNeighbors
-index = faiss.read_index("index.faiss")
 import numpy as np
 import streamlit as st
 from dotenv import load_dotenv
 from openai import OpenAI
 import requests
+from sklearn.neighbors import NearestNeighbors
 from utils import image_to_base64
 from scrapers.ranking import buscar_posicao_furia, buscar_top_30
 from scrapers.lineup import buscar_lineup_furia
@@ -35,36 +34,38 @@ st.set_page_config(page_title="FURIA Experience 🦁", page_icon="🎽", layout=
 
 # 2) Caches para scrapers
 @st.cache_data(ttl=300)
-def load_posicao():    return buscar_posicao_furia()
+def load_posicao(): return buscar_posicao_furia()
 @st.cache_data(ttl=300)
-def load_top30():      return buscar_top_30()
+def load_top30(): return buscar_top_30()
 @st.cache_data(ttl=300)
-def load_lineup():     return buscar_lineup_furia()
+def load_lineup(): return buscar_lineup_furia()
 @st.cache_data(ttl=300)
-def load_noticias():   return buscar_noticias()
+def load_noticias(): return buscar_noticias()
 
 # 3) RAG API setup
 @st.cache_resource
 def load_rag_api():
-    if not os.path.exists("index.faiss") or not os.path.exists("meta.json"):
-        raise RuntimeError("Gere index.faiss e meta.json com build_index_api.py")
-    index = faiss.read_index("index.faiss")
-    with open("meta.json","r",encoding="utf-8") as f:
+    if not os.path.exists("meta.json"):
+        raise RuntimeError("Gere meta.json com build_index.py")
+    with open("meta.json", "r", encoding="utf-8") as f:
         meta = json.load(f)
+    embeddings = np.array([m["embedding"] for m in meta], dtype="float32")
+    nn = NearestNeighbors(n_neighbors=3, metric="cosine")
+    nn.fit(embeddings)
     client = OpenAI(api_key=OPENAI_API_KEY)
-    return index, meta, client
+    return nn, meta, client
 
 try:
-    index, meta, client = load_rag_api()
+    nn, meta, client = load_rag_api()
 except RuntimeError as e:
     st.error(f"❌ Erro ao inicializar RAG API: {e}")
     st.stop()
 
-def retrieve_api(query: str, k: int=3) -> list[str]:
+def retrieve_api(query: str, k: int = 3) -> list[str]:
     resp = client.embeddings.create(model="text-embedding-3-small", input=[query])
-    q_emb = np.array(resp.data[0].embedding, dtype="float32")[None,:]
-    _, I = index.search(q_emb, k)
-    return [ meta[i]["text"] for i in I[0] ]
+    q_emb = np.array(resp.data[0].embedding, dtype="float32").reshape(1, -1)
+    _, I = nn.kneighbors(q_emb)
+    return [meta[i]["text"] for i in I[0]]
 
 # 4) Branding
 logo_b64 = image_to_base64("assets/logofuria.png")
@@ -104,7 +105,7 @@ elif page == "🏆 Ranking da FURIA":
     if "posicao" not in st.session_state or "top30" not in st.session_state:
         with st.spinner("Buscando ranking…"):
             st.session_state.posicao = load_posicao()
-            st.session_state.top30   = load_top_30()
+            st.session_state.top30 = buscar_top_30()
     st.success(st.session_state.posicao)
     df = st.session_state.top30
     if isinstance(df, str):

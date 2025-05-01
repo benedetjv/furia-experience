@@ -1,8 +1,9 @@
 streamlit
 openai
 python-dotenv
-scikit-learn
+numpy
 requests
-beautifulsoup4
+scikit-learn
 selenium
 pandas
+beautifulsoup4

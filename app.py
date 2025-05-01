@@ -49,6 +49,11 @@ def load_rag_api():
         raise RuntimeError("Gere meta.json com build_index.py")
     with open("meta.json", "r", encoding="utf-8") as f:
         meta = json.load(f)
+
+    for m in meta:
+        if "embedding" not in m:
+            raise RuntimeError(f"❌ Faltando 'embedding' no item: {m.get('id')}")
+
     embeddings = np.array([m["embedding"] for m in meta], dtype="float32")
     nn = NearestNeighbors(n_neighbors=3, metric="cosine")
     nn.fit(embeddings)
@@ -63,6 +68,10 @@ except RuntimeError as e:
 
 def retrieve_api(query: str, k: int = 3) -> list[str]:
     resp = client.embeddings.create(model="text-embedding-3-small", input=[query])
+
+    if not resp.data:
+        raise RuntimeError("❌ Nenhum dado retornado pela OpenAI para a consulta.")
+
     q_emb = np.array(resp.data[0].embedding, dtype="float32").reshape(1, -1)
     _, I = nn.kneighbors(q_emb)
     return [meta[i]["text"] for i in I[0]]

@@ -1,24 +1,7 @@
-# Ambientes virtuais
-venv/
-env/
-
-# Cache do Python
+.env
 __pycache__/
 *.pyc
-
-# Configs do VSCode
-.vscode/
-
-# Dados sensíveis
-.env
-
-# Logs e temporários
-*.log
-*.tmp
-
-# Arquivos de build do FAISS
 index.faiss
 meta.json
-
-# Imagens temporárias ou não essenciais
-*.png
+*.log
+chromedriver*

@@ -2,10 +2,7 @@ streamlit
 openai
 python-dotenv
 scikit-learn
-numpy
 requests
 beautifulsoup4
 selenium
-playwright
 pandas
-c

@@ -1,22 +1,27 @@
 [
   {
     "id": "ranking-posicao",
-    "text": "🏆 A FURIA está na posição 16ª com 103 pontos na HLTV."
+    "text": "🏆 A FURIA está na posição 16ª com 103 pontos na HLTV.",
+    "embedding": [0.1, 0.2, 0.3, 0.4, 0.5]
   },
   {
     "id": "ranking-top30",
-    "text": "Top 30 HLTV:\n1. Vitality — 1000\n2. Spirit — 849\n3. MOUZ — 629\n4. Aurora — 544\n5. Natus Vincere — 534\n6. G2 — 430\n7. The MongolZ — 419\n8. FaZe — 303\n9. Falcons — 254\n10. Virtus.pro — 233\n11. 3DMAX — 198\n12. GamerLegion — 188\n13. Liquid — 164\n14. Complexity — 138\n15. Astralis — 134\n16. FURIA — 103\n17. paiN — 101\n18. SAW — 88\n19. M80 — 80\n20. MIBR — 75\n21. TYLOO — 62\n22. HEROIC — 56\n23. Betclic — 52\n24. BIG — 49\n25. BetBoom — 46\n26. FlyQuest — 44\n27. Nemiga — 41\n28. OG — 40\n29. Wildcard — 39\n30. Rare Atom — 39"
+    "text": "Top 30 HLTV:\n1. Vitality — 1000\n2. Spirit — 849\n3. MOUZ — 629\n...",
+    "embedding": [0.2, 0.1, 0.4, 0.3, 0.5]
   },
   {
     "id": "lineup",
-    "text": "Line-up FURIA: FalleN, yuurih, YEKINDAR, KSCERATO, molodoy; Coach: Sid 'sidde' Macedo."
+    "text": "Line-up FURIA: FalleN, yuurih, YEKINDAR, KSCERATO, molodoy; Coach: Sid 'sidde' Macedo.",
+    "embedding": [0.5, 0.3, 0.2, 0.1, 0.4]
   },
   {
     "id": "noticias",
-    "text": "Notícias:\n- Short: Macron congratulates Vitality on their Grand Slam: https://www.hltv.org/news/41491/short-news-week-17#33\n- HEROIC smash B8 to win CCT Global Finals: https://www.hltv.org/news/41560/heroic-smash-b8-to-win-cct-global-finals\n- Champion of Champions Tour Season 3 announced with 40 events: https://www.hltv.org/news/41559/champion-of-champions-tour-season-3-announced-with-40-events\n- ZywOo: \"It's not because we won the Grand Slam and Melbourne that everything is done for the Major\": https://www.hltv.org/news/41558/zywoo-its-not-because-we-won-the-grand-slam-and-melbourne-that-everything-is-done-for-the-major\n- Vitality become fifth ESL Grand Slam winners: https://www.hltv.org/news/41557/vitality-become-fifth-esl-grand-slam-winners\n- ZywOo named IEM Melbourne MVP: https://www.hltv.org/news/41555/zywoo-named-iem-melbourne-mvp\n- Vitality outlast Falcons in IEM Melbourne final thriller to clinch Grand Slam: https://www.hltv.org/news/41556/vitality-outlast-falcons-in-iem-melbourne-final-thriller-to-clinch-grand-slam\n- Live updates from IEM Melbourne grand final: https://www.hltv.org/news/41554/live-updates-from-iem-melbourne-grand-final#53\n- flameZ: \"We welcome the nervousness and stress because we're in a great position as a team\": https://www.hltv.org/news/41551/flamez-we-welcome-the-nervousness-and-stress-because-were-in-a-great-position-as-a-team\n- IEM Melbourne semi-finals as they happened: https://www.hltv.org/news/41547/iem-melbourne-semi-finals-as-they-happened#26"
+    "text": "Notícias: HEROIC vence CCT Global Finals. Vitality conquista o Grand Slam.",
+    "embedding": [0.3, 0.5, 0.1, 0.4, 0.2]
   },
   {
     "id": "calendario",
-    "text": "Hoje a FURIA joga: 😔 A FURIA não joga hoje."
+    "text": "Hoje a FURIA joga: 😔 A FURIA não joga hoje.",
+    "embedding": [0.4, 0.2, 0.5, 0.3, 0.1]
   }
 ]

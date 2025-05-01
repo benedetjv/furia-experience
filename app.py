@@ -1,18 +1,38 @@
 import os
 import json
 import faiss
+from sklearn.neighbors import NearestNeighbors
+index = faiss.read_index("index.faiss")
 import numpy as np
 import streamlit as st
 from dotenv import load_dotenv
 from openai import OpenAI
+import requests
 from utils import image_to_base64
 from scrapers.ranking import buscar_posicao_furia, buscar_top_30
 from scrapers.lineup import buscar_lineup_furia
 from scrapers.noticias import buscar_noticias
 from scrapers.calendario import buscar_partida_furia_hoje
 
+load_dotenv()
+
+# Variáveis de ambiente
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+DISCORD_WEBHOOK_URL = os.getenv("DISCORD_WEBHOOK_URL")
+
+if not OPENAI_API_KEY:
+    raise RuntimeError("❌ OPENAI_API_KEY não encontrada.")
+
+# Função para enviar notificação ao Discord
+def notificar_discord(msg: str):
+    if DISCORD_WEBHOOK_URL:
+        try:
+            requests.post(DISCORD_WEBHOOK_URL, json={"content": msg})
+        except Exception as e:
+            print("Erro ao enviar webhook:", e)
+
 # 1) set_page_config deve ser primeiro
-st.set_page_config(page_title="FURIA Experience 🦁", page_icon="🏁", layout="wide")
+st.set_page_config(page_title="FURIA Experience 🦁", page_icon="🎽", layout="wide")
 
 # 2) Caches para scrapers
 @st.cache_data(ttl=300)
@@ -27,17 +47,12 @@ def load_noticias():   return buscar_noticias()
 # 3) RAG API setup
 @st.cache_resource
 def load_rag_api():
-    # certifique-se de rodar build_index_api.py antes
     if not os.path.exists("index.faiss") or not os.path.exists("meta.json"):
         raise RuntimeError("Gere index.faiss e meta.json com build_index_api.py")
     index = faiss.read_index("index.faiss")
     with open("meta.json","r",encoding="utf-8") as f:
         meta = json.load(f)
-    load_dotenv()
-    api_key = os.getenv("OPENAI_API_KEY")
-    if not api_key:
-        raise RuntimeError("OPENAI_API_KEY não encontrada em .env")
-    client = OpenAI(api_key=api_key)
+    client = OpenAI(api_key=OPENAI_API_KEY)
     return index, meta, client
 
 try:
@@ -67,25 +82,21 @@ PAGES = [
     "🏆 Ranking da FURIA",
     "🎯 Line-up da FURIA",
     "📰 Notícias Recentes",
-    "📅 FURIA joga hoje?",
+    "🗕️ FURIA joga hoje?",
     "💬 Modo Bate-Papo"
 ]
 
-# 5) estado inicial
 if "page" not in st.session_state:
     st.session_state.page = PAGES[0]
 if "history" not in st.session_state:
-    st.session_state.history = []  # lista de dicts {"role":"user"/"bot","text":...}
+    st.session_state.history = []
 
-# 6) mostra header na Home
 if st.session_state.page == "🏠 Home":
     st.markdown(HEADER_HTML, unsafe_allow_html=True)
 
-# 7) menu
 st.selectbox("Selecione uma opção:", PAGES, index=PAGES.index(st.session_state.page), key="page")
 page = st.session_state.page
 
-# 8) Renderização
 if page == "🏠 Home":
     pass
 
@@ -94,7 +105,7 @@ elif page == "🏆 Ranking da FURIA":
     if "posicao" not in st.session_state or "top30" not in st.session_state:
         with st.spinner("Buscando ranking…"):
             st.session_state.posicao = load_posicao()
-            st.session_state.top30   = load_top30()
+            st.session_state.top30   = load_top_30()
     st.success(st.session_state.posicao)
     df = st.session_state.top30
     if isinstance(df, str):
@@ -132,8 +143,8 @@ elif page == "📰 Notícias Recentes":
         for n in noticias:
             st.markdown(f"- [{n['titulo']}]({n['link']})")
 
-elif page == "📅 FURIA joga hoje?":
-    st.header("📅 Partidas da FURIA Hoje")
+elif page == "🗕️ FURIA joga hoje?":
+    st.header("🗕️ Partidas da FURIA Hoje")
     if st.button("🔄 Consultar"):
         with st.spinner("Consultando…"):
             jogos = buscar_partida_furia_hoje()
@@ -147,30 +158,24 @@ elif page == "📅 FURIA joga hoje?":
 elif page == "💬 Modo Bate-Papo":
     st.header("💬 Modo Bate-Papo")
 
-    # 1) Placeholder pra desenhar o chat AFTER o form
     chat_container = st.container()
 
-    # 2) Form que limpa o input automaticamente
     with st.form("chat_form", clear_on_submit=True):
         pergunta = st.text_input("Digite sua pergunta…", key="input")
-        # botoes lado a lado
         c1, c2 = st.columns([1,1])
         with c1:
             enviar = st.form_submit_button("Enviar")
         with c2:
             limpar = st.form_submit_button("Limpar histórico")
 
-        # 3) Limpa o histórico se clicar em "Limpar histórico"
         if limpar:
             st.session_state.history = []
 
-        # 4) Se enviou pergunta, processa imediatamente
         elif enviar and pergunta:
-            # armazena pergunta
             st.session_state.history.append({"role":"user","text":pergunta})
+            notificar_discord(f"🦁 Pergunta feita ao FURIA Experience: {pergunta}")
 
             low = pergunta.lower()
-            # interceptações fixas
             if "posição" in low or "ranking" in low:
                 pos_msg = load_posicao()
                 import re
@@ -210,23 +215,15 @@ elif page == "💬 Modo Bate-Papo":
                     )
                     resposta = resp.choices[0].message.content.strip()
 
-                # fallback se o modelo disser que não sabe
                 if any(k in resposta.lower() for k in ["não sei","desculpe"]):
                     resposta = (
                         "😕 Infelizmente não posso te responder sobre isso. "
                         "Pode fazer outra pergunta?"
                     )
 
-            # armazena a resposta
             st.session_state.history.append({"role":"bot","text":resposta})
 
-    # 5) Depois do form, imprime o histórico já atualizado
     with chat_container:
         for msg in st.session_state.history:
             who = "Você" if msg["role"]=="user" else "FURIA"
             st.markdown(f"**{who}:** {msg['text']}")
-
-
-
-
-

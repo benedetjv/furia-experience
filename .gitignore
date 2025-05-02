@@ -1,17 +1,27 @@
-# Ambiente virtual
-venv/
+# Arquivos sensíveis
 .env
+furia-key.pem
+
+# FAISS e dados
+index.faiss
+meta.json
+
+# Build e setup temporários
+build_index.py
+setup_chrome_selenium.sh
+teste.py
+
+# Drivers
+chromedriver-win64/
+
+# Cache do Python
 __pycache__/
 *.pyc
 
-# Dados sensíveis
-.env
-meta_fake.json
-*.log
+# Docker/Render
+.dockerignore
+Dockerfile
+Procfile
 
-# Arquivos temporários e caches
-*.tmp
-.DS_Store
-
-# Arquivos de índice locais
-index.faiss
+# GitHub workflow
+.github/

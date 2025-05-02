@@ -30,7 +30,12 @@ def notificar_discord(msg: str):
             print("Erro ao enviar webhook:", e)
 
 # 1) set_page_config deve ser primeiro
-st.set_page_config(page_title="FURIA Experience 🦁", page_icon="🎽", layout="wide")
+st.set_page_config(
+    page_title="FURIA Experience 🦁",
+    page_icon="assets/favicon.png",  # Caminho até o PNG
+    layout="wide"
+)
+
 
 # 2) Caches para scrapers
 @st.cache_data(ttl=300)
@@ -91,7 +96,7 @@ PAGES = [
     "🏆 Ranking da FURIA",
     "🎯 Line-up da FURIA",
     "📰 Notícias Recentes",
-    "🗕️ FURIA joga hoje?",
+    "📅 A FURIA joga hoje?",
     "💬 Modo Bate-Papo"
 ]
 
@@ -152,17 +157,29 @@ elif page == "📰 Notícias Recentes":
         for n in noticias:
             st.markdown(f"- [{n['titulo']}]({n['link']})")
 
-elif page == "🗕️ FURIA joga hoje?":
-    st.header("🗕️ Partidas da FURIA Hoje")
+elif page == "📅 A FURIA joga hoje?":
+    st.header("📅 Partidas da FURIA Hoje")
+
+    if "jogos_hoje" not in st.session_state:
+        st.session_state.jogos_hoje = None
+
     if st.button("🔄 Consultar"):
         with st.spinner("Consultando…"):
-            jogos = buscar_partida_furia_hoje()
-        if isinstance(jogos,list):
+            st.session_state.jogos_hoje = buscar_partida_furia_hoje()
+
+    jogos = st.session_state.jogos_hoje
+
+    if jogos:
+        if isinstance(jogos, list):
             st.success("Hoje a FURIA joga:")
             for j in jogos:
                 st.write(f"- {j}")
         else:
             st.info(jogos)
+    else:
+        st.markdown("Clique no botão acima para saber se a FURIA joga hoje.")
+
+
 
 elif page == "💬 Modo Bate-Papo":
     st.header("💬 Modo Bate-Papo")

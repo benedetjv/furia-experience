@@ -8,22 +8,16 @@ from selenium.webdriver.support import expected_conditions as EC
 from bs4 import BeautifulSoup
 import pandas as pd
 
-from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.chrome.options import Options
-
 def criar_driver():
-    options = Options()
-    options.add_argument('--headless')
+    service = Service('chromedriver-win64/chromedriver.exe')  # Caminho correto do driver no seu projeto
+    options = webdriver.ChromeOptions()
+    options.add_argument('--headless=new')
     options.add_argument('--no-sandbox')
     options.add_argument('--disable-dev-shm-usage')
-
-    options.binary_location = "/usr/bin/chromium"  # caminho do Chrome no container
-    service = Service("/usr/bin/chromedriver")     # caminho do chromedriver no container
-
+    options.add_argument('--disable-blink-features=AutomationControlled')
+    options.add_argument('user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36')
     driver = webdriver.Chrome(service=service, options=options)
     return driver
-
 
 def buscar_posicao_furia():
     driver = criar_driver()
@@ -37,13 +31,13 @@ def buscar_posicao_furia():
         ranked_teams = soup.find_all("div", class_="ranked-team")
 
         for team in ranked_teams:
-            team_name = team.find("span", class_="name").text.strip()
-            if "FURIA" in team_name.upper():
+            team_link = team.find("a", class_="moreLink")
+            if team_link and "/team/8297/furia" in team_link.get("href", ""):
                 position = team.find("span", class_="position").text.strip().replace("#", "")
                 points = team.find("span", class_="points").text.strip().replace("(", "").replace(")", "").replace("HLTV points", "").strip()
-                return f"\U0001F3C6 A FURIA est\u00e1 na posi\u00e7\u00e3o {position}\u00aa com {points} pontos na HLTV."
+                return f"\U0001F3C6 A FURIA está na posição {position}ª com {points} pontos na HLTV."
 
-        return "\ud83d\ude14 N\u00e3o encontrei a FURIA no ranking."
+        return "😔 Não encontrei a FURIA no ranking."
 
     except Exception as e:
         return f"Erro ao buscar ranking: {e}"
@@ -60,7 +54,6 @@ def buscar_top_30():
         )
 
         soup = BeautifulSoup(driver.page_source, 'html.parser')
-        # pega só as 30 primeiras divs
         ranked_teams = soup.find_all("div", class_="ranked-team")[:30]
 
         lista = []
@@ -83,7 +76,6 @@ def buscar_top_30():
     finally:
         driver.quit()
 
-
 def buscar_lineup_furia():
     driver = criar_driver()
     try:
@@ -93,19 +85,13 @@ def buscar_lineup_furia():
         )
 
         soup = BeautifulSoup(driver.page_source, 'html.parser')
-
         players = soup.find_all("div", class_="playerNickname")
 
-        jogadores = []
-        for p in players:
-            nickname = p.text.strip()
-            jogadores.append(nickname)
-
-        # Coach (se quiser capturar depois)
-        return jogadores
+        jogadores = [p.text.strip() for p in players]
+        return jogadores, "Coach não capturado"
 
     except Exception as e:
-        return []
+        return [], "Erro ao capturar lineup"
 
     finally:
         driver.quit()
